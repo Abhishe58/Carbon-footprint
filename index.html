@@ -33,6 +33,7 @@
       font-weight: bold;
       margin-top: 15px;
       display: block;
+      font-size: 1rem;
     }
     input, select {
       width: 100%;
@@ -75,11 +76,11 @@
     }
     canvas {
       margin-top: 20px;
-      max-width: 100%;
+      width: 100% !important;
       height: auto !important;
     }
 
-    /* ✅ Responsive Design */
+    /* ✅ Tablet view */
     @media (max-width: 768px) {
       .container {
         padding: 20px;
@@ -87,12 +88,20 @@
       h1 {
         font-size: 1.5rem;
       }
+      label {
+        font-size: 0.95rem;
+      }
+      input, select {
+        font-size: 0.95rem;
+        padding: 9px;
+      }
       button {
         font-size: 15px;
         padding: 12px;
       }
     }
 
+    /* ✅ Mobile view */
     @media (max-width: 480px) {
       body {
         align-items: stretch;
@@ -103,6 +112,9 @@
       }
       h1 {
         font-size: 1.3rem;
+      }
+      label {
+        font-size: 0.9rem;
       }
       input, select {
         font-size: 0.9rem;
@@ -227,5 +239,4 @@
     }
   </script>
 </body>
-      </html>
-      
+</html>
