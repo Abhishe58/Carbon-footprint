@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Carbon Footprint Calculator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7f8;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .container {
+      width: 90%;
+      max-width: 650px;
+      background: #fff;
+      padding: 25px;
+      margin: 30px;
+      border-radius: 12px;
+      box-shadow: 0px 6px 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #27ae60;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #219150;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #ecf0f1;
+      border-radius: 8px;
+      display: none;
+    }
+    .suggestions {
+      margin-top: 10px;
+      padding: 10px;
+      background: #dff9fb;
+      border-left: 4px solid #00a8ff;
+    }
+    canvas {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌍 Carbon Footprint Calculator</h1>
+    
+    <!-- Transport -->
+    <label for="transport">Transport (km per day by car):</label>
+    <input type="number" id="transport" placeholder="e.g. 15">
+    
+    <!-- Electricity -->
+    <label for="electricity">Electricity Usage (kWh per month):</label>
+    <input type="number" id="electricity" placeholder="e.g. 200">
+    
+    <!-- Diet -->
+    <label for="diet">Diet Type:</label>
+    <select id="diet">
+      <option value="1.5">Vegan (~1.5 kg CO₂/day)</option>
+      <option value="2.0">Vegetarian (~2.0 kg CO₂/day)</option>
+      <option value="5.0">Non-Vegetarian (~5.0 kg CO₂/day)</option>
+    </select>
+    
+    <!-- Shopping -->
+    <label for="shopping">Shopping (kg CO₂ per month):</label>
+    <input type="number" id="shopping" placeholder="e.g. 50">
+    
+    <!-- Waste -->
+    <label for="waste">Waste (kg per month):</label>
+    <input type="number" id="waste" placeholder="e.g. 100">
+    
+    <button onclick="calculateFootprint()">Calculate</button>
+    
+    <div class="result" id="resultBox">
+      <h3>Your Carbon Footprint:</h3>
+      <p id="output"></p>
+      <canvas id="footprintChart"></canvas>
+      <div class="suggestions" id="suggestions"></div>
+    </div>
+  </div>
+
+  <script>
+    let chart; // global variable for chart
+    
+    function calculateFootprint() {
+      // Input values
+      let transport = parseFloat(document.getElementById("transport").value) || 0;
+      let electricity = parseFloat(document.getElementById("electricity").value) || 0;
+      let diet = parseFloat(document.getElementById("diet").value) || 0;
+      let shopping = parseFloat(document.getElementById("shopping").value) || 0;
+      let waste = parseFloat(document.getElementById("waste").value) || 0;
+
+      // Emission factors
+      let transportEF = 0.2; // kg CO₂/km (car petrol)
+      let electricityEF = 0.7; // kg CO₂/kWh (average grid)
+      let wasteEF = 1.6; // kg CO₂/kg waste (landfill)
+
+      // Calculations
+      let transportCO2 = transport * 30 * transportEF; // monthly
+      let electricityCO2 = electricity * electricityEF;
+      let dietCO2 = diet * 30; // monthly
+      let shoppingCO2 = shopping; // assume already in CO₂ terms
+      let wasteCO2 = waste * wasteEF;
+
+      let total = transportCO2 + electricityCO2 + dietCO2 + shoppingCO2 + wasteCO2;
+
+      // Show results
+      document.getElementById("resultBox").style.display = "block";
+      document.getElementById("output").innerHTML = 
+        `🚗 Transport: ${transportCO2.toFixed(2)} kg CO₂/month<br>
+         ⚡ Electricity: ${electricityCO2.toFixed(2)} kg CO₂/month<br>
+         🍽️ Diet: ${dietCO2.toFixed(2)} kg CO₂/month<br>
+         🛒 Shopping: ${shoppingCO2.toFixed(2)} kg CO₂/month<br>
+         🗑️ Waste: ${wasteCO2.toFixed(2)} kg CO₂/month<br><br>
+         <strong>Total: ${total.toFixed(2)} kg CO₂/month</strong>`;
+
+      // Chart.js Pie Chart
+      const ctx = document.getElementById('footprintChart').getContext('2d');
+      if (chart) chart.destroy(); // destroy old chart if exists
+      chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Transport', 'Electricity', 'Diet', 'Shopping', 'Waste'],
+          datasets: [{
+            data: [transportCO2, electricityCO2, dietCO2, shoppingCO2, wasteCO2],
+            backgroundColor: ['#e74c3c','#3498db','#2ecc71','#f1c40f','#9b59b6']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+
+      // Suggestions
+      let suggestionText = "";
+      if (transportCO2 > 100) suggestionText += "🚴 Try using public transport or cycling more.<br>";
+      if (electricityCO2 > 100) suggestionText += "💡 Switch to energy-efficient appliances.<br>";
+      if (dietCO2 > 120) suggestionText += "🥦 Reduce meat consumption a few days per week.<br>";
+      if (shoppingCO2 > 100) suggestionText += "👕 Buy fewer but higher-quality items.<br>";
+      if (wasteCO2 > 100) suggestionText += "♻️ Recycle and compost to reduce landfill waste.<br>";
+      if (suggestionText === "") suggestionText = "✅ Your footprint is already eco-friendly!";
+
+      document.getElementById("suggestions").innerHTML = suggestionText;
+    }
+  </script>
+</body>
+</html>
